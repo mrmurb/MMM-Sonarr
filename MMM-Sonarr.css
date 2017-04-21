@@ -1,0 +1,27 @@
+.MMM-Sonarr {
+    font-size: 75%;
+    line-height: 65px;
+    display: inline-block;
+    -ms-transform: translate(0, -3px);
+    -webkit-transform: translate(0, -3px);
+    transform: translate(0, -3px);
+}
+
+.MMM-Sonarr table {
+    width: 400px;
+}
+
+.airtime {
+    width: 20%;
+    align: left;
+    padding-right: 20px;
+}
+
+.seriestitle {
+    width: 40%;
+    padding-right: 10px;
+}
+
+.episodetitle {
+    width: 40%;
+}
