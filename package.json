@@ -1,6 +1,13 @@
 {
   "name": "MMM-Sonarr",
   "version": "0.0.1",
+  "description": "Sonarr module for MagicMirror",
+  "author": "Max Enelund",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+http://github.com/mrmurb/MMM-Sonarr"
+  },
   "dependencies": {
     "unirest": "^0.5.1",
     "moment": "^2.18.1"
