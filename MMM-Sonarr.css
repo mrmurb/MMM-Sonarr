@@ -11,9 +11,19 @@
     width: 400px;
 }
 
+.MMM-Sonarr td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 400px;
+}
+
+.calendar {
+    padding-bottom: 20px;
+}
+
 .airtime {
     width: 20%;
-    align: left;
     padding-right: 20px;
 }
 

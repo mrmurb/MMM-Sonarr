@@ -25,55 +25,84 @@ module.exports = NodeHelper.create({
 
     updateRecords: function () {
         let self = this;
+        let response = [];
 
-        // Empty current records
-        this.records = [];
+        unirest.get(self.getUrl("calendar")).send().end(function (r) {
+            if (r.error) {
+                console.log(self.name + " : " + r.error);
+                //TODO add update call
+            } else {
+                // console.log("body: ", JSON.stringify(r.body));
+                // self.parseRecords(r.body);
+                response.calendar = r.body;
 
-        unirest.get(this.getUrl("calendar"))
-            .send()
-            .end(function (r) {
-                if(r.error) {
-                    console.log(self.name + " : " + r.error);
-                    //TODO add update call
-                } else {
-                    //console.log("body: ", JSON.stringify(r.body));
-                    self.parseRecords(r.body);
-                }
-            });
+                unirest.get(self.getUrl("history")).send().end(function (r) {
+                    if (r.error) {
+                        console.log(self.name + " : " + r.error);
+                    } else {
+                        response.history = r.body.records;
+                        self.parseRecords(response);
+                    }
+                })
+            }
+        });
     },
 
     parseRecords: function (data) {
-        for (let i in data) {
-            let record = data[i];
+        let records = {
+            calendar: [],
+            history: []
+        };
+
+        // Handle upcoming records, calendar.
+        for (let i in data.calendar) {
+            let record = data.calendar[i];
             let airDate = record.airDate;
             let seriesTitle = record.series.title;
             let episodeTitle = record.title;
 
-            this.records.push({
+            records.calendar.push({
                 airdate: moment(airDate).format("D/M"),
                 seriesTitle: seriesTitle.replace(/ *\([^)]*\) */g, "").trim(),
                 episodeTitle: episodeTitle
             });
         }
 
+        // Handle past records, history
+
+        for (let i in data.history) {
+            let record = data.history[i];
+            if(record.eventType === "downloadFolderImported") {
+                let airDate = record.episode.date;
+                let seriesTitle = record.series.title;
+                let episodeTitle = record.episode.title;
+
+                records.history.push({
+                    airDate: moment(airDate).format("D/M"),
+                    seriesTitle: seriesTitle.replace(/ *\([^)]*\) */g, "").trim(),
+                    episodeTitle: episodeTitle
+                });
+            }
+        }
+
         this.scheduleUpdate(this.config.updateInterval);
-        this.sendSocketNotification("RECORDS", this.records);
+        this.sendSocketNotification("RECORDS", records);
     },
 
     getUrl: function (endpoint) {
         let url = this.config.apiBase;
-        url += this.config.apiEndpoint;
+        url += endpoint;
+        url += "?apiKey=" + this.config.apiKey;
 
-        if(this.config.apiEndpoint === "calendar") {
+        if(endpoint === "calendar") {
             let date = moment();
-
-            url += "?apiKey=" + this.config.apiKey;
-            url += "&start=" + date.format("YYYY-MM-DD");
-            url += "&end=" + date.add(1, 'month').format("YYYY-MM-DD");
+            url += "&start=" + date.add(1, "days").format("YYYY-MM-DD");
+            url += "&end=" + date.add(this.config.calendar.num, this.config.calendar.type).format("YYYY-MM-DD");
         }
 
         if(this.config.apiEndpoint === "history") {
-
+            url += "&sortKey=" + this.config.history.sortKey;
+            url += "&sortDir=" + this.config.history.sortDir;
         }
 
         return url;

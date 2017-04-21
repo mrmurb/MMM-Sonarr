@@ -5,11 +5,18 @@ Module.register("MMM-Sonarr", {
     defaults: {
         apiBase: "",
         apiKey: "",
-        apiEndpoint: "calendar",
         fade: true,
         updateInterval: 5 * 50 * 1000,
         initialLoadDelay: 0,
-        maximumEntries: 5
+        maximumEntries: 5,
+        calendar: {
+            num: 1,
+            type: "month" // days|months|years
+        },
+        history: {
+            sortKey: "date", // date|series.title
+            sortDir: "desc"
+        }
     },
 
     getStyles: function () {
@@ -45,16 +52,25 @@ Module.register("MMM-Sonarr", {
             return wrapper;
         }
 
-        let table = document.createElement("table");
-        table.className = "small";
+        let calendarTable = document.createElement("table");
+        let calendarHeader = document.createElement("header");
+        calendarTable.className = "small calendar";
+        calendarHeader.innerHTML = "Upcoming";
 
-        for(let r in this.records) {
+        let historyTable = document.createElement("table");
+        let historyHeader = document.createElement("header");
+        historyTable.className = "small history";
+        historyHeader.innerHTML = "History";
+
+
+
+        for(let r in this.records.calendar) {
             if(r >= this.config.maximumEntries) break;
 
-            let record = this.records[r];
+            let record = this.records.calendar[r];
 
             let row = document.createElement("tr");
-            table.appendChild(row);
+            calendarTable.appendChild(row);
 
             let airTimeCell = document.createElement("td");
             airTimeCell.className = "airtime";
@@ -73,7 +89,35 @@ Module.register("MMM-Sonarr", {
 
         }
 
-        return table;
+        for(let r in this.records.history) {
+            if(r >= this.config.maximumEntries) break;
+
+            let record = this.records.history[r];
+
+            let row = document.createElement("tr");
+            historyTable.appendChild(row);
+
+            let airTimeCell = document.createElement("td");
+            airTimeCell.className = "airtime";
+            airTimeCell.innerHTML = record.airDate;
+            row.appendChild(airTimeCell);
+
+            let seriesTitleCell = document.createElement("td");
+            seriesTitleCell.className = "seriestitle";
+            seriesTitleCell.innerHTML = record.seriesTitle;
+            row.appendChild(seriesTitleCell);
+
+            let episodeTitleCell = document.createElement("td");
+            episodeTitleCell.className = "episodetitle";
+            episodeTitleCell.innerHTML = record.episodeTitle;
+            row.appendChild(episodeTitleCell);
+        }
+
+        wrapper.appendChild(calendarHeader);
+        wrapper.appendChild(calendarTable);
+        wrapper.appendChild(historyHeader);
+        wrapper.appendChild(historyTable);
+        return wrapper;
     },
     
     scheduleUpdate: function (delay) {
